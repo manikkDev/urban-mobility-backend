@@ -1,5 +1,5 @@
 const { errorResponse } = require('../utils/response');
-const { ISSUE_TYPES, SCHEME_CONDITIONS, SEVERITY_LEVELS } = require('../utils/constants');
+const { RAILWAY_ISSUE_TYPES, SCHEME_CONDITIONS, SEVERITY_LEVELS } = require('../config/constants');
 
 const validateReport = (req, res, next) => {
   const { schemeId, description, severity, issueType, schemeCondition, locationLabel } = req.body;
@@ -23,8 +23,8 @@ const validateReport = (req, res, next) => {
     errors.push('Severity must be between 1 (very minor) and 5 (critical)');
   }
 
-  if (issueType && !ISSUE_TYPES.includes(issueType)) {
-    errors.push('Please select a valid issue type');
+  if (issueType && !RAILWAY_ISSUE_TYPES.includes(issueType)) {
+    errors.push('Please select a valid railway issue type');
   }
 
   if (schemeCondition && !SCHEME_CONDITIONS.includes(schemeCondition)) {

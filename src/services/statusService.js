@@ -1,5 +1,3 @@
-const { STATUS_COLOR_MAP } = require('../utils/constants');
-
 const computePublicStatus = (reports) => {
   if (!reports || reports.length === 0) {
     return { publicStatus: 'unverified', statusColor: 'gray' };

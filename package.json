@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node src/data/seed.js",
+    "seed": "node src/data/railwaySeed.js",
     "build": "echo 'No build step required'"
   },
   "keywords": [],

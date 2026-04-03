@@ -5,7 +5,7 @@ const updateSchemeAnalytics = async (schemeId) => {
   const db = getFirestore();
 
   const reportsSnapshot = await db
-    .collection('reports')
+    .collection('railway_reports')
     .where('schemeId', '==', schemeId)
     .get();
 
@@ -59,9 +59,9 @@ const updateSchemeAnalytics = async (schemeId) => {
     lastUpdatedAt: new Date().toISOString(),
   };
 
-  await db.collection('scheme_analytics').doc(schemeId).set(analyticsData, { merge: true });
+  await db.collection('railway_scheme_analytics').doc(schemeId).set(analyticsData, { merge: true });
 
-  await db.collection('schemes').doc(schemeId).update({
+  await db.collection('railway_schemes').doc(schemeId).update({
     publicStatus,
     statusColor,
     reportCount,

@@ -11,15 +11,18 @@ const submitReport = async (req, res, next) => {
       locationLabel, coordinates, ignoredByOfficials, schemeCondition,
     } = req.body;
 
-    const schemeDoc = await db.collection('schemes').doc(schemeId).get();
+    const schemeDoc = await db.collection('railway_schemes').doc(schemeId).get();
     if (!schemeDoc.exists) {
-      return errorResponse(res, 'Scheme not found', [], 404);
+      return errorResponse(res, 'Railway scheme not found', [], 404);
     }
 
     const classification = classifyReport(description, issueType);
 
+    const schemeData = schemeDoc.data();
+    
     const reportData = {
       schemeId,
+      stationName: schemeData.stationName || '',
       reportMode: reportMode || 'ground_issue',
       schemeCondition: schemeCondition || classification.schemeCondition,
       issueType: classification.issueType,
@@ -39,17 +42,16 @@ const submitReport = async (req, res, next) => {
       updatedAt: new Date().toISOString(),
     };
 
-    const schemeData = schemeDoc.data();
     if (schemeData.officialStatus === 'completed' &&
         (classification.schemeCondition === 'not_working' || classification.schemeCondition === 'ignored')) {
       reportData.officialClaimMismatch = true;
     }
 
-    const reportRef = await db.collection('reports').add(reportData);
+    const reportRef = await db.collection('railway_reports').add(reportData);
 
     await updateSchemeAnalytics(schemeId);
 
-    return successResponse(res, 'Report submitted successfully. Thank you for helping improve accessibility.', {
+    return successResponse(res, 'Railway accessibility report submitted successfully. Thank you for helping improve railway accessibility.', {
       id: reportRef.id,
       ...reportData,
     }, 201);
@@ -61,9 +63,9 @@ const submitReport = async (req, res, next) => {
 const getIssues = async (req, res, next) => {
   try {
     const db = getFirestore();
-    const { schemeId, issueCategory, issueType, reviewStatus, severity } = req.query;
+    const { schemeId, issueCategory, issueType, reviewStatus, severity, stationName } = req.query;
 
-    const snapshot = await db.collection('reports').get();
+    const snapshot = await db.collection('railway_reports').get();
     let issues = [];
 
     snapshot.forEach((doc) => {
@@ -85,6 +87,10 @@ const getIssues = async (req, res, next) => {
     if (severity) {
       issues = issues.filter((i) => i.severity === parseInt(severity));
     }
+    if (stationName) {
+      const station = stationName.toLowerCase().trim();
+      issues = issues.filter((i) => i.stationName && i.stationName.toLowerCase().includes(station));
+    }
 
     issues.sort((a, b) => {
       const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
@@ -92,7 +98,7 @@ const getIssues = async (req, res, next) => {
       return dateB - dateA;
     });
 
-    const schemesSnapshot = await db.collection('schemes').get();
+    const schemesSnapshot = await db.collection('railway_schemes').get();
     const schemesMap = {};
     schemesSnapshot.forEach((doc) => {
       schemesMap[doc.id] = doc.data();
@@ -100,12 +106,13 @@ const getIssues = async (req, res, next) => {
 
     const enrichedIssues = issues.map((issue) => ({
       ...issue,
-      schemeTitle: schemesMap[issue.schemeId]?.title || 'Unknown Scheme',
+      schemeTitle: schemesMap[issue.schemeId]?.title || 'Unknown Railway Scheme',
       schemeCategory: schemesMap[issue.schemeId]?.category || '',
-      schemeAreaName: schemesMap[issue.schemeId]?.areaName || '',
+      schemeStationName: schemesMap[issue.schemeId]?.stationName || '',
+      schemeDivisionName: schemesMap[issue.schemeId]?.divisionName || '',
     }));
 
-    return successResponse(res, 'Issues retrieved successfully', enrichedIssues);
+    return successResponse(res, 'Railway issues retrieved successfully', enrichedIssues);
   } catch (error) {
     next(error);
   }

@@ -1,13 +1,14 @@
-const { ISSUE_TYPES, ISSUE_CATEGORIES } = require('../utils/constants');
+const { RAILWAY_ISSUE_TYPES, RAILWAY_ISSUE_CATEGORIES } = require('../config/constants');
 
 const issueTypeToCategory = {
   broken_escalator: 'equipment_failure',
   lift_not_working: 'equipment_failure',
   damaged_ramp: 'equipment_failure',
-  inaccessible_road: 'road_access',
-  blocked_footpath: 'pathway_blockage',
+  inaccessible_platform: 'platform_access_problem',
+  blocked_wheelchair_access: 'pathway_blockage',
   missing_tactile_path: 'pathway_blockage',
-  unsafe_crossing: 'safety_risk',
+  unsafe_foot_over_bridge: 'safety_risk',
+  assistance_counter_unavailable: 'assistance_unavailable',
   signage_missing: 'signage_problem',
   scheme_not_started: 'official_neglect',
   partial_implementation: 'partial_implementation',
@@ -20,10 +21,11 @@ const issueTypeToCondition = {
   broken_escalator: 'not_working',
   lift_not_working: 'not_working',
   damaged_ramp: 'not_working',
-  inaccessible_road: 'not_working',
-  blocked_footpath: 'partially_working',
+  inaccessible_platform: 'not_working',
+  blocked_wheelchair_access: 'partially_working',
   missing_tactile_path: 'not_working',
-  unsafe_crossing: 'partially_working',
+  unsafe_foot_over_bridge: 'partially_working',
+  assistance_counter_unavailable: 'not_working',
   signage_missing: 'partially_working',
   scheme_not_started: 'ignored',
   partial_implementation: 'partially_working',
@@ -33,7 +35,7 @@ const issueTypeToCondition = {
 };
 
 const classifyReport = (description, providedIssueType = null) => {
-  if (providedIssueType && ISSUE_TYPES.includes(providedIssueType)) {
+  if (providedIssueType && RAILWAY_ISSUE_TYPES.includes(providedIssueType)) {
     return {
       issueType: providedIssueType,
       issueCategory: issueTypeToCategory[providedIssueType] || 'other',
@@ -56,20 +58,24 @@ const classifyReport = (description, providedIssueType = null) => {
     return { issueType: 'damaged_ramp', issueCategory: 'equipment_failure', schemeCondition: 'not_working', classifiedBy: 'rule_engine' };
   }
 
-  if ((desc.includes('road') || desc.includes('street')) && (desc.includes('wheelchair') || desc.includes('inaccessible') || desc.includes('no access'))) {
-    return { issueType: 'inaccessible_road', issueCategory: 'road_access', schemeCondition: 'not_working', classifiedBy: 'rule_engine' };
+  if ((desc.includes('platform') || desc.includes('railway platform')) && (desc.includes('wheelchair') || desc.includes('inaccessible') || desc.includes('no access') || desc.includes('cannot reach'))) {
+    return { issueType: 'inaccessible_platform', issueCategory: 'platform_access_problem', schemeCondition: 'not_working', classifiedBy: 'rule_engine' };
   }
 
-  if ((desc.includes('footpath') || desc.includes('sidewalk') || desc.includes('path')) && (desc.includes('blocked') || desc.includes('obstruct') || desc.includes('encroach'))) {
-    return { issueType: 'blocked_footpath', issueCategory: 'pathway_blockage', schemeCondition: 'partially_working', classifiedBy: 'rule_engine' };
+  if ((desc.includes('wheelchair') || desc.includes('disability')) && (desc.includes('blocked') || desc.includes('obstruct') || desc.includes('cannot access'))) {
+    return { issueType: 'blocked_wheelchair_access', issueCategory: 'pathway_blockage', schemeCondition: 'partially_working', classifiedBy: 'rule_engine' };
   }
 
   if (desc.includes('tactile') && (desc.includes('missing') || desc.includes('no tactile') || desc.includes('absent'))) {
     return { issueType: 'missing_tactile_path', issueCategory: 'pathway_blockage', schemeCondition: 'not_working', classifiedBy: 'rule_engine' };
   }
 
-  if ((desc.includes('crossing') || desc.includes('zebra')) && (desc.includes('unsafe') || desc.includes('dangerous') || desc.includes('no signal'))) {
-    return { issueType: 'unsafe_crossing', issueCategory: 'safety_risk', schemeCondition: 'partially_working', classifiedBy: 'rule_engine' };
+  if ((desc.includes('foot over bridge') || desc.includes('fob') || desc.includes('overbridge')) && (desc.includes('unsafe') || desc.includes('dangerous') || desc.includes('broken'))) {
+    return { issueType: 'unsafe_foot_over_bridge', issueCategory: 'safety_risk', schemeCondition: 'partially_working', classifiedBy: 'rule_engine' };
+  }
+
+  if ((desc.includes('assistance') || desc.includes('help desk') || desc.includes('counter')) && (desc.includes('unavailable') || desc.includes('closed') || desc.includes('no one'))) {
+    return { issueType: 'assistance_counter_unavailable', issueCategory: 'assistance_unavailable', schemeCondition: 'not_working', classifiedBy: 'rule_engine' };
   }
 
   if ((desc.includes('sign') || desc.includes('signage')) && (desc.includes('missing') || desc.includes('no sign') || desc.includes('unclear'))) {

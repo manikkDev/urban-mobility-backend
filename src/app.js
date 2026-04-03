@@ -47,34 +47,34 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Inclusive Urban Mobility Intelligence Platform API',
+    message: 'Railway Disability Scheme Tracking & Accessibility Platform API',
     version: '1.0.0',
     endpoints: {
       health: '/health',
-      schemes: '/api/schemes',
-      reports: '/api/reports',
-      issues: '/api/issues',
+      railwaySchemes: '/api/railway-schemes',
+      railwayReports: '/api/railway-reports',
+      railwayIssues: '/api/railway-issues',
     },
   });
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Urban Mobility API is running' });
+  res.json({ status: 'ok', message: 'Railway Accessibility API is running' });
 });
 
 app.get('/api', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Urban Mobility API base path',
+    message: 'Railway Accessibility API base path',
     endpoints: {
-      schemes: '/api/schemes',
-      reports: '/api/reports',
-      issues: '/api/issues',
+      railwaySchemes: '/api/railway-schemes',
+      railwayReports: '/api/railway-reports',
+      railwayIssues: '/api/railway-issues',
     },
   });
 });
 
-app.use('/api/schemes', schemeRoutes);
+app.use('/api/railway-schemes', schemeRoutes);
 app.use('/api', reportRoutes);
 
 app.use(errorHandler);
