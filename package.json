@@ -1,7 +1,7 @@
 {
   "name": "urban-mobility-backend",
   "version": "1.0.0",
-  "description": "Backend for Inclusive Urban Mobility Intelligence Platform",
+  "description": "Backend for Urban Mobility - Railway Disability Scheme Tracking Platform",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",

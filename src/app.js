@@ -47,7 +47,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Railway Disability Scheme Tracking & Accessibility Platform API',
+    message: 'Urban Mobility - Railway Disability Scheme Tracking Platform API',
     version: '1.0.0',
     endpoints: {
       health: '/health',
@@ -59,13 +59,13 @@ app.get('/', (req, res) => {
 });
 
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Railway Accessibility API is running' });
+  res.json({ status: 'ok', message: 'Urban Mobility API is running' });
 });
 
 app.get('/api', (req, res) => {
   res.json({
     status: 'ok',
-    message: 'Railway Accessibility API base path',
+    message: 'Urban Mobility API base path',
     endpoints: {
       railwaySchemes: '/api/railway-schemes',
       railwayReports: '/api/railway-reports',
