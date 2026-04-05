@@ -42,6 +42,13 @@ const submitReport = async (req, res, next) => {
       updatedAt: new Date().toISOString(),
     };
 
+    // Add authenticated user info if available
+    if (req.user) {
+      reportData.submittedByUid = req.user.uid;
+      reportData.submittedByEmail = req.user.email;
+      reportData.submittedByName = req.user.fullName;
+    }
+
     if (schemeData.officialStatus === 'completed' &&
         (classification.schemeCondition === 'not_working' || classification.schemeCondition === 'ignored')) {
       reportData.officialClaimMismatch = true;

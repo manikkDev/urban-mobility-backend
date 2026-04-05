@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
-const schemeRoutes = require('./routes/stationRoutes');
-const reportRoutes = require('./routes/feedbackRoutes');
+const schemeRoutes = require('./routes/railwaySchemeRoutes');
+const reportRoutes = require('./routes/railwayReportRoutes');
+const authRoutes = require('./routes/authRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -76,6 +77,7 @@ app.get('/api', (req, res) => {
 
 app.use('/api/railway-schemes', schemeRoutes);
 app.use('/api', reportRoutes);
+app.use('/api/auth', authRoutes);
 
 app.use(errorHandler);
 
