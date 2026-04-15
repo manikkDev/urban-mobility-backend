@@ -56,16 +56,22 @@ const getProfile = async (req, res, next) => {
     }
 
     const userData = userDoc.data();
-    
-    // Get user's report count
-    const reportsSnapshot = await db.collection('railway_reports')
-      .where('submittedByUid', '==', req.user.uid)
-      .count()
-      .get();
+    let reportCount = 0;
+
+    try {
+      const reportsSnapshot = await db.collection('railway_reports')
+        .where('submittedByUid', '==', req.user.uid)
+        .count()
+        .get();
+
+      reportCount = reportsSnapshot.data().count || 0;
+    } catch (countError) {
+      console.error('Failed to fetch report count for profile:', countError);
+    }
 
     const profile = {
       ...userData,
-      reportCount: reportsSnapshot.data().count || 0
+      reportCount
     };
 
     return successResponse(res, 'Profile retrieved successfully', profile);
