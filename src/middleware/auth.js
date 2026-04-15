@@ -22,27 +22,11 @@ const verifyToken = async (req, res, next) => {
     // Verify the Firebase ID token
     const decodedToken = await getAuth().verifyIdToken(token);
     
-    // Fetch user profile from Firestore
-    const db = getFirestore();
-    const userDoc = await db.collection('users').doc(decodedToken.uid).get();
-    
-    if (!userDoc.exists) {
-      return errorResponse(res, 'User profile not found', [], 404);
-    }
-
-    const userData = userDoc.data();
-    
-    if (!userData.isActive) {
-      return errorResponse(res, 'User account is inactive', [], 403);
-    }
-
-    // Attach user info to request
+    // Attach decoded token info to request
+    // The actual profile fetch happens in the controller to avoid race conditions
     req.user = {
       uid: decodedToken.uid,
-      email: decodedToken.email,
-      role: userData.role,
-      fullName: userData.fullName,
-      ...userData
+      email: decodedToken.email
     };
 
     next();
@@ -64,31 +48,63 @@ const verifyToken = async (req, res, next) => {
 /**
  * Middleware to require admin role
  */
-const requireAdmin = (req, res, next) => {
-  if (!req.user) {
-    return errorResponse(res, 'Authentication required', [], 401);
-  }
+const requireAdmin = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return errorResponse(res, 'Authentication required', [], 401);
+    }
 
-  if (req.user.role !== 'admin') {
-    return errorResponse(res, 'Admin access required', [], 403);
-  }
+    const db = getFirestore();
+    const userDoc = await db.collection('users').doc(req.user.uid).get();
+    
+    if (!userDoc.exists) {
+      return errorResponse(res, 'User profile not found', [], 404);
+    }
 
-  next();
+    const userData = userDoc.data();
+    
+    if (userData.role !== 'admin') {
+      return errorResponse(res, 'Admin access required', [], 403);
+    }
+
+    // Attach full user data to request
+    req.user = { ...req.user, ...userData };
+    next();
+  } catch (error) {
+    console.error('Admin check error:', error);
+    return errorResponse(res, 'Authorization failed', [], 500);
+  }
 };
 
 /**
  * Middleware to require citizen role
  */
-const requireCitizen = (req, res, next) => {
-  if (!req.user) {
-    return errorResponse(res, 'Authentication required', [], 401);
-  }
+const requireCitizen = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return errorResponse(res, 'Authentication required', [], 401);
+    }
 
-  if (req.user.role !== 'citizen') {
-    return errorResponse(res, 'Citizen access required', [], 403);
-  }
+    const db = getFirestore();
+    const userDoc = await db.collection('users').doc(req.user.uid).get();
+    
+    if (!userDoc.exists) {
+      return errorResponse(res, 'User profile not found', [], 404);
+    }
 
-  next();
+    const userData = userDoc.data();
+    
+    if (userData.role !== 'citizen') {
+      return errorResponse(res, 'Citizen access required', [], 403);
+    }
+
+    // Attach full user data to request
+    req.user = { ...req.user, ...userData };
+    next();
+  } catch (error) {
+    console.error('Citizen check error:', error);
+    return errorResponse(res, 'Authorization failed', [], 500);
+  }
 };
 
 /**
