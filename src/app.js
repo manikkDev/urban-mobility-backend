@@ -20,26 +20,35 @@ const allowedOrigins = (process.env.FRONTEND_URL || '')
 app.use(
   cors({
     origin: (origin, callback) => {
+      // Allow all origins in development
       if (process.env.NODE_ENV !== 'production') {
         return callback(null, true);
       }
 
+      // Allow requests with no origin (like mobile apps or curl)
       if (!origin) {
         return callback(null, true);
       }
 
       const normalizedOrigin = normalizeOrigin(origin);
 
+      // If no FRONTEND_URL is set, allow all (fallback for initial deployment)
       if (allowedOrigins.length === 0) {
+        console.warn('FRONTEND_URL not set - allowing all origins. Set FRONTEND_URL in production!');
         return callback(null, true);
       }
 
+      // Check if origin is in allowed list
       if (allowedOrigins.includes(normalizedOrigin)) {
         return callback(null, true);
       }
 
+      console.error('CORS blocked origin:', normalizedOrigin, 'Allowed:', allowedOrigins);
       return callback(new Error('Not allowed by CORS'));
     },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 app.use(express.json());
